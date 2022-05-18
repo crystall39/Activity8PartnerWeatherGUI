@@ -3,15 +3,19 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+// add the photo
+
 public class WeatherGUIController implements ActionListener
 {
-    private JTextArea weatherInfo;
+    private JFrame frame;
+    private JTextArea currentInfo;
     private JTextField weatherEntryField;
     private WeatherNetworkingClient client;
 
     public WeatherGUIController()
     {
-        weatherInfo = new JTextArea(20, 20);
+        frame = new JFrame("Weather App");
+        currentInfo = new JTextArea(2, 35);
         weatherEntryField = new JTextField();
         client = new WeatherNetworkingClient();
 
@@ -20,7 +24,6 @@ public class WeatherGUIController implements ActionListener
 
     private void setupGui()
     {
-        JFrame frame = new JFrame("Weather App");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JLabel welcomeLabel = new JLabel("Current Weather");
@@ -32,12 +35,13 @@ public class WeatherGUIController implements ActionListener
 
         //------------------------------------------
 
-        JPanel entryPanel = new JPanel();
         JLabel weatherLabel = new JLabel("Enter Zip Code: ");
         weatherEntryField = new JTextField(5);
         JButton submitButton = new JButton("Submit");
         JButton clearButton = new JButton("Clear");
         JCheckBox celsiusCheck = new JCheckBox("Show Celsius");
+
+        JPanel entryPanel = new JPanel();
         entryPanel.add(weatherLabel);
         entryPanel.add(weatherEntryField);
         entryPanel.add(submitButton);
@@ -46,13 +50,14 @@ public class WeatherGUIController implements ActionListener
 
         //------------------------------------------
 
+        currentInfo.setText("\nWaiting for an input...\n");
+        currentInfo.setFont(new Font("Arial", Font.BOLD, 10));
+        currentInfo.setWrapStyleWord(true);
+        currentInfo.setLineWrap(true);
+        currentInfo.setOpaque(false);
+
         JPanel weatherPanel = new JPanel();
-        ImageIcon image = new ImageIcon("placeholder.jpg");
-        Image imageData = image.getImage();
-        Image scaledImage = imageData.getScaledInstance(100, 100, java.awt.Image.SCALE_SMOOTH);
-        image = new ImageIcon(scaledImage);
-        JLabel pictureLabel = new JLabel(image);
-        weatherPanel.add(pictureLabel);
+        weatherPanel.add(currentInfo);
 
         //------------------------------------------
 
@@ -66,11 +71,6 @@ public class WeatherGUIController implements ActionListener
 
         frame.pack();
         frame.setVisible(true);
-    }
-
-    private void loadWeather()
-    {
-
     }
 
     public void actionPerformed(ActionEvent e)
@@ -90,18 +90,28 @@ public class WeatherGUIController implements ActionListener
             selected = checkBox.isSelected();
         }
 
+
+
+        String zipcode = weatherEntryField.getText();
+        Weather forecast = client.getCurrentForecast(zipcode);
+
+        if (selected)
+        {
+            String currentText = ("Temperature: " + forecast.getTempC() + "   Condition: " + forecast.getCurrentCondition());
+            currentInfo.setText(currentText);
+        }
+        else
+        {
+            String currentText = ("Temperature: " + forecast.getTempF() + "   Condition: " + forecast.getCurrentCondition());
+            currentInfo.setText(currentText);
+        }
+
         if (text.equals("Clear"))
         {
             weatherEntryField.setText("");
-            loadWeather();
+            currentInfo.setText("\nWaiting for an input...\n");
         }
-        if(text.equals("Submit"))
-        {
-            String zipcode = weatherEntryField.getText();
-            Weather forecast = client.getCurrentForecast(zipcode);
 
-            weatherInfo.setText("Temperature: " + forecast.getTempF() + " Condition " + forecast.getCurrentCondition());
-        }
 
     }
 }
