@@ -1,23 +1,27 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-// add the photo
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 
 public class WeatherGUIController implements ActionListener
 {
     private JFrame frame;
-    private JTextArea currentInfo;
+    private JLabel currentInfo;
     private JTextField weatherEntryField;
     private WeatherNetworkingClient client;
+    private JPanel weatherPanel;
 
     public WeatherGUIController()
     {
         frame = new JFrame("Weather App");
-        currentInfo = new JTextArea(2, 35);
+        currentInfo = new JLabel();
         weatherEntryField = new JTextField();
         client = new WeatherNetworkingClient();
+        weatherPanel = new JPanel();
 
         setupGui();
     }
@@ -52,11 +56,9 @@ public class WeatherGUIController implements ActionListener
 
         currentInfo.setText("\nWaiting for an input...\n");
         currentInfo.setFont(new Font("Arial", Font.BOLD, 10));
-        currentInfo.setWrapStyleWord(true);
-        currentInfo.setLineWrap(true);
         currentInfo.setOpaque(false);
 
-        JPanel weatherPanel = new JPanel();
+        weatherPanel = new JPanel();
         weatherPanel.add(currentInfo);
 
         //------------------------------------------
@@ -69,6 +71,8 @@ public class WeatherGUIController implements ActionListener
         clearButton.addActionListener(this);
         celsiusCheck.addActionListener(this);
 
+        //------------------------------------------
+
         frame.pack();
         frame.setVisible(true);
     }
@@ -79,6 +83,7 @@ public class WeatherGUIController implements ActionListener
         JCheckBox checkBox = new JCheckBox();
         String text = "";
         boolean selected = false;
+
         try
         {
             button = (JButton) (e.getSource());
@@ -90,28 +95,44 @@ public class WeatherGUIController implements ActionListener
             selected = checkBox.isSelected();
         }
 
-
-
         String zipcode = weatherEntryField.getText();
         Weather forecast = client.getCurrentForecast(zipcode);
+
+        ImageIcon weatherIcon = new ImageIcon();
+
+        try
+        {
+            BufferedImage image = ImageIO.read(new URL("https:" + forecast.getConditionIcon()));
+            weatherIcon = new ImageIcon(image);
+        }
+        catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        Image imageData = weatherIcon.getImage();
+        Image scaledImage = imageData.getScaledInstance(50, 50, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
+        weatherIcon = new ImageIcon(scaledImage);
+        JLabel pictureLabel = new JLabel(weatherIcon);
 
         if (selected)
         {
             String currentText = ("Temperature: " + forecast.getTempC() + "   Condition: " + forecast.getCurrentCondition());
             currentInfo.setText(currentText);
+            weatherPanel.add(pictureLabel);
         }
         else
         {
             String currentText = ("Temperature: " + forecast.getTempF() + "   Condition: " + forecast.getCurrentCondition());
             currentInfo.setText(currentText);
+            weatherPanel.add(pictureLabel);
         }
 
         if (text.equals("Clear"))
         {
             weatherEntryField.setText("");
+            weatherPanel.removeAll();
+            weatherPanel.add(currentInfo);
             currentInfo.setText("\nWaiting for an input...\n");
         }
-
-
     }
 }
