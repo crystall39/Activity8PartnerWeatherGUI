@@ -116,12 +116,16 @@ public class WeatherGUIController implements ActionListener
 
         if (selected)
         {
+            weatherPanel.removeAll();
+            weatherPanel.add(currentInfo);
             String currentText = ("Temperature: " + forecast.getTempC() + "   Condition: " + forecast.getCurrentCondition());
             currentInfo.setText(currentText);
             weatherPanel.add(pictureLabel);
         }
         else
         {
+            weatherPanel.removeAll();
+            weatherPanel.add(currentInfo);
             String currentText = ("Temperature: " + forecast.getTempF() + "   Condition: " + forecast.getCurrentCondition());
             currentInfo.setText(currentText);
             weatherPanel.add(pictureLabel);
